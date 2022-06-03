@@ -2983,7 +2983,6 @@ let isPost = core.getState('IsPost');
 core.saveState('IsPost', true);
 
 let connectionStringName = core.getInput('connection-string-name');
-let hostEnvVarName = core.getInput('host-env-var-name');
 let tagName = core.getInput('tag');
 
 async function run() {
@@ -2994,28 +2993,27 @@ async function run() {
 
             console.log("Running setup action");
 
-            let RabbitMQName = 'psw-rabbitmq-' + Math.round(10000000000 * Math.random());
-            core.saveState('RabbitMQName', RabbitMQName);
+            let RabbitMQName = 'psw-oracle-' + Math.round(10000000000 * Math.random());
+            core.saveState('OracleContainerName', OracleContainerName);
 
-            console.log("RabbitMQName = " + RabbitMQName);
+            console.log("OracleContainerName = " + OracleContainerName);
 
             await exec.exec('pwsh', [
                 '-File', setupPs1,
-                '-hostname', RabbitMQName,
+                '-hostname', OracleContainerName,
                 '-connectionStringName', connectionStringName,
-                '-tagName', tagName,
-                '-hostEnvVarName', hostEnvVarName
+                '-tagName', tagName
             ]);
 
         } else { // Cleanup
 
             console.log("Running cleanup");
 
-            let RabbitMQName = core.getState('RabbitMQName');
+            let RabbitMQName = core.getState('OracleContainerName');
 
             await exec.exec('pwsh', [
                 '-File', cleanupPs1,
-                '-RabbitMQName', RabbitMQName
+                '-OracleContainerName', OracleContainerName
             ]);
 
         }

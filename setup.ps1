@@ -12,7 +12,7 @@ $packageTag = "Package=$tagName"
 echo "::set-output name=hostname::$hostname"
 echo "Creating Oracle container $hostname in $region (This can take a while.)"
 
-$jsonResult = az container create --image gvenzl/oracle-xe:21 --name $hostname --location $region --dns-name-label $hostname --resource-group GitHubActions-RG --cpu 4 --memory 16 --ports 1521 5500 --ip-address public
+$jsonResult = az container create --image gvenzl/oracle-xe:21 --name $hostname --location $region --dns-name-label $hostname --resource-group GitHubActions-RG --cpu 4 --memory 16 --ports 1521 5500 --ip-address public --environment-variables ORACLE_PASSWORD=Welcome1
 
 if (!$jsonResult) {
     Write-Output "Failed to create Oracle container"
