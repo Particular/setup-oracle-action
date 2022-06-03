@@ -1,5 +1,5 @@
 param (
-    [string]$hostname,
+    [string]$oracleContainerName,
     [string]$connectionStringName,
     [string]$tagName
 )
@@ -9,10 +9,9 @@ $region = $hostInfo.compute.location
 $runnerOsTag = "RunnerOS=$($Env:RUNNER_OS)"
 $packageTag = "Package=$tagName"
 
-echo "::set-output name=hostname::$hostname"
-echo "Creating Oracle container $hostname in $region (This can take a while.)"
+echo "Creating Oracle container $oracleContainerName in $region (This can take a while.)"
 
-$jsonResult = az container create --image gvenzl/oracle-xe:21 --name $hostname --location $region --dns-name-label $hostname --resource-group GitHubActions-RG --cpu 4 --memory 16 --ports 1521 5500 --ip-address public --environment-variables ORACLE_PASSWORD=Welcome1
+$jsonResult = az container create --image gvenzl/oracle-xe:21 --name $oracleContainerName --location $region --dns-name-label $oracleContainerName --resource-group GitHubActions-RG --cpu 4 --memory 16 --ports 1521 5500 --ip-address public --environment-variables ORACLE_PASSWORD=Welcome1
 
 if (!$jsonResult) {
     Write-Output "Failed to create Oracle container"
@@ -22,7 +21,7 @@ if (!$jsonResult) {
 $details = $jsonResult | ConvertFrom-Json
 
 if (!$details.ipAddress) {
-    Write-Output "Failed to create Oracle container $hostname in $region"
+    Write-Output "Failed to create Oracle container $oracleContainerName in $region"
     Write-Output $jsonResult
     exit 1;
 }
@@ -37,7 +36,6 @@ $ignore = az tag create --resource-id $details.id --tags $packageTag $runnerOsTa
 
 echo "$connectionStringName=$ip:1521" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
 
-$uri = "http://" + $ip + ":15672/api/health/checks/virtual-hosts"
 $tcpClient = New-Object Net.Sockets.TcpClient
 $tries = 0
 
@@ -46,7 +44,7 @@ do {
     try
     {
         $tcpClient.Connect($ip, 1521)
-        echo "Connection to $hostname successful"
+        echo "Connection to $oracleContainerName successful"
     } catch 
     {
         Write-Output "No response, retrying..."

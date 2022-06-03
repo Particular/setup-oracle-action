@@ -3000,7 +3000,7 @@ async function run() {
 
             await exec.exec('pwsh', [
                 '-File', setupPs1,
-                '-hostname', OracleContainerName,
+                '-oracleContainerName', OracleContainerName,
                 '-connectionStringName', connectionStringName,
                 '-tagName', tagName
             ]);
