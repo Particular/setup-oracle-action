@@ -3009,7 +3009,7 @@ async function run() {
 
             console.log("Running cleanup");
 
-            let RabbitMQName = core.getState('OracleContainerName');
+            let OracleContainerName = core.getState('OracleContainerName');
 
             await exec.exec('pwsh', [
                 '-File', cleanupPs1,
