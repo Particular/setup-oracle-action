@@ -2993,7 +2993,7 @@ async function run() {
 
             console.log("Running setup action");
 
-            let RabbitMQName = 'psw-oracle-' + Math.round(10000000000 * Math.random());
+            let OracleContainerName = 'psw-oracle-' + Math.round(10000000000 * Math.random());
             core.saveState('OracleContainerName', OracleContainerName);
 
             console.log("OracleContainerName = " + OracleContainerName);
