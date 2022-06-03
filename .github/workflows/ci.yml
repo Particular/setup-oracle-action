@@ -29,22 +29,10 @@ jobs:
         with:
           connection-string-name: OracleConnectionString
           tag: setup-oracle-action
-      - name: Validate host
+      - name: Validate connection
         shell: pwsh
         run: |
           echo "OracleConnectionString = $($Env:OracleConnectionString)"
           if ( $Env:OracleConnectionString -le 0 ) {
             throw "Environment variable 'OracleConnectionString' not set."
-          }
-      - name: Run
-        uses: ./
-        with:
-          connection-string-name: OracleConnectionString2
-          tag: setup-oracle-action
-      - name: Validate without host var
-        shell: pwsh
-        run: |
-          echo "OracleConnectionString2 = $($Env:OracleConnectionString2)"
-          if ( $Env:OracleConnectionString2 -le 0 ) {
-            throw "Environment variable 'OracleConnectionString2' not set."
           }
