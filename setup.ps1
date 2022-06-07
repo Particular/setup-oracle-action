@@ -64,7 +64,7 @@ elseif ($Env:RUNNER_OS -eq "Windows") {
             Write-Output "Connection to $oracleContainerName successful"
         }
         catch {
-            Write-Output "No response, retrying..."
+            Write-Output "No response, retrying $($tries)/50..."
             Start-Sleep -m 5000
         }
     } until (($tcpClient.Connected -eq "True") -or ($tries -ge 50))
