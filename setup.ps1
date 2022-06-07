@@ -4,18 +4,18 @@ param (
     [string]$tagName
 )
 
-Write-Output $RUNNER_OS
-if ($RUNNER_OS -eq "Linux")
+Write-Output $Env:RUNNER_OS
+if ($Env:RUNNER_OS -eq "Linux")
 {
     Write-Output "Linux"
 }
-elseif ($RUNNER_OS -eq "Windows") 
+elseif ($Env:RUNNER_OS -eq "Windows") 
 {
     Write-Output "Windows"
 }
 else 
 {
-    Write-Output "$RUNNER_OS not supported"
+    Write-Output "$Env:RUNNER_OS not supported"
     exit 1
 }
 
