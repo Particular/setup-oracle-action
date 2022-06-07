@@ -1,25 +1,25 @@
 param (
-    [string]$oracleContainerName,
-    [string]$connectionStringName,
-    [string]$tagName
+    [string]$oracleContainerName = "psw-oracle-1",
+    [string]$connectionStringName = "OracleConnectionString",
+    [string]$tagName = "setup-oracle-action"
 )
 
 $dockerImage = "gvenzl/oracle-xe:21-slim"
 $oraclePassword = "Welcome1"
 $ip = "127.0.0.1"
 $port = 1521
+$runnerOs = $Env:RUNNER_OS ?? "Linux"
 
 Write-Output "::add-mask::$ip"
 
-Write-Output $Env:RUNNER_OS
-if ($Env:RUNNER_OS -eq "Linux") {
+if ($runnerOs -eq "Linux") {
     Write-Output "Running Oracle using Docker"
-    docker run --name $oracleContainerName -d -p $port:1521 -e ORACLE_PASSWORD=$oraclePassword $dockerImage
+    docker run --name "$($oracleContainerName)" -d -p "$($port):$($port)" -e ORACLE_PASSWORD=$oraclePassword $dockerImage
 
     for ($i = 0; $i -lt 24; $i++) {
         ## 2 minute timeout
         Write-Output "Checking for Oracle connectivity $($i+1)/24..."
-        docker exec $oracleContainerName ./healthcheck.sh
+        docker exec "$($oracleContainerName)" ./healthcheck.sh
         if ($?) {
             Write-Output "Connection successful"
             break;
@@ -27,10 +27,10 @@ if ($Env:RUNNER_OS -eq "Linux") {
         sleep 5
     }
 }
-elseif ($Env:RUNNER_OS -eq "Windows") {
+elseif ($runnerOs -eq "Windows") {
     $hostInfo = curl -H Metadata:true "169.254.169.254/metadata/instance?api-version=2017-08-01" | ConvertFrom-Json
     $region = $hostInfo.compute.location
-    $runnerOsTag = "RunnerOS=$($Env:RUNNER_OS)"
+    $runnerOsTag = "RunnerOS=$($runnerOs)"
     $packageTag = "Package=$tagName"
     
     Write-Output "Running Oracle container $oracleContainerName in $region (This can take a while.)"
