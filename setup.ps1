@@ -49,18 +49,18 @@ elseif ($runnerOs -eq "Windows") {
     $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
     az tag create --resource-id $details.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
 
-    $healthCheckCommand = "az container exec --name ""$($oracleContainerName)"" --exec-command ""./healthcheck.sh"""
+    $healthCheckCommand = "az container exec --name ""$($oracleContainerName)"" --location $region --resource-group GitHubActions-RG --exec-command ""./healthcheck.sh"""
 }
 else {
     Write-Output "$runnerOs not supported"
     exit 1
 }
 
-
+$healthCheckCommand += ';$?'
 for ($i = 0; $i -lt 50; $i++) {
-    Write-Output "Checking for Oracle connectivity $($i+1)/24..."
-    Invoke-Expression $healthCheckCommand
-    if ($?) {
+    Write-Output "Checking for Oracle connectivity $($i+1)/50..."
+    $Success = Invoke-Expression $healthCheckCommand
+    if ($Success) {
         Write-Output "Connection successful"
         break;
     }
