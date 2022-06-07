@@ -6,19 +6,25 @@ param (
 
 $dockerImage = "gvenzl/oracle-xe:21-slim"
 $oraclePassword = "Welcome1"
+$ip = "127.0.0.1"
+$port = 1521
+
+Write-Output "::add-mask::$ip"
 
 Write-Output $Env:RUNNER_OS
 if ($Env:RUNNER_OS -eq "Linux") {
     Write-Output "Running Oracle using Docker"
-    docker run --name oracle -d -p 1521:1521 -e ORACLE_PASSWORD=$oraclePassword $dockerImage
-    for ($i = 0; $i -lt 24; $i++) { ## 2 minute timeout
+    docker run --name $oracleContainerName -d -p $port:1521 -e ORACLE_PASSWORD=$oraclePassword $dockerImage
+
+    for ($i = 0; $i -lt 24; $i++) {
+        ## 2 minute timeout
         Write-Output "Checking for Oracle connectivity $($i+1)/24..."
-      docker exec oracle ./healthcheck.sh
-      if ($?) {
-        Write-Output "Connection successful"
-        break;
-      }
-      sleep 5
+        docker exec $oracleContainerName ./healthcheck.sh
+        if ($?) {
+            Write-Output "Connection successful"
+            break;
+        }
+        sleep 5
     }
 }
 elseif ($Env:RUNNER_OS -eq "Windows") {
@@ -29,7 +35,7 @@ elseif ($Env:RUNNER_OS -eq "Windows") {
     
     Write-Output "Running Oracle container $oracleContainerName in $region (This can take a while.)"
     
-    $jsonResult = az container create --image $dockerImage --name $oracleContainerName --location $region --dns-name-label $oracleContainerName --resource-group GitHubActions-RG --cpu 4 --memory 16 --ports 1521 5500 --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword
+    $jsonResult = az container create --image $dockerImage --name $oracleContainerName --location $region --dns-name-label $oracleContainerName --resource-group GitHubActions-RG --cpu 4 --memory 16 --ports $port --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword
     
     if (!$jsonResult) {
         Write-Output "Failed to create Oracle container"
@@ -46,13 +52,10 @@ elseif ($Env:RUNNER_OS -eq "Windows") {
     
     $ip = $details.ipAddress.ip
     
-    echo "::add-mask::$ip"
     Write-Output "Tagging container image"
     
     $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
-    $ignore = az tag create --resource-id $details.id --tags $packageTag $runnerOsTag $dateTag
-    
-    echo "$connectionStringName=$ip:1521" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+    az tag create --resource-id $details.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
     
     $tcpClient = New-Object Net.Sockets.TcpClient
     $tries = 0
@@ -83,4 +86,4 @@ else {
     exit 1
 }
 
-    
+"$connectionStringName=$ip:1521" >> $Env:GITHUB_ENV
