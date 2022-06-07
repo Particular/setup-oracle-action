@@ -4,7 +4,8 @@ param (
     [string]$tagName
 )
 
-if($RUNNER_CONTEXT.os == "Linux")
+echo $RUNNER_CONTEXT.os
+if($RUNNER_CONTEXT.os = "Linux")
 {
     echo "Linux"
 }
