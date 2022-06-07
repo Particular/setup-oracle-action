@@ -4,14 +4,20 @@ param (
     [string]$tagName
 )
 
-echo $RUNNER_CONTEXT.os
-if($RUNNER_CONTEXT.os = "Linux")
+Write-Output $RUNNER_OS
+if($RUNNER_OS -eq "Linux")
 {
-    echo "Linux"
+    Write-Output "Linux"
+}
+elseif ($fruit -eq "Windows") 
+{
+    Write-Output "Windows"
 }
 else 
 {
-    echo "Windows"
+    Write-Output "$RUNNER_OS not supported"
+    exit 1
+}
 
     # $hostInfo = curl -H Metadata:true "169.254.169.254/metadata/instance?api-version=2017-08-01" | ConvertFrom-Json
     # $region = $hostInfo.compute.location
