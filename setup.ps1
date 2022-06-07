@@ -5,11 +5,11 @@ param (
 )
 
 Write-Output $RUNNER_OS
-if($RUNNER_OS -eq "Linux")
+if ($RUNNER_OS -eq "Linux")
 {
     Write-Output "Linux"
 }
-elseif ($fruit -eq "Windows") 
+elseif ($RUNNER_OS -eq "Windows") 
 {
     Write-Output "Windows"
 }
@@ -75,4 +75,3 @@ else
     # else {
     #     $tcpClient.Close()
     # }
-}
