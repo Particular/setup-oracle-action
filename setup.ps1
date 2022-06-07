@@ -8,7 +8,7 @@ $dockerImage = "gvenzl/oracle-xe:21-slim"
 $oraclePassword = "Welcome1"
 $ip = "127.0.0.1"
 $port = 1521
-$runnerOs = $Env:RUNNER_OS ?? "Windows"
+$runnerOs = $Env:RUNNER_OS ?? "Linux"
 
 Write-Output "::add-mask::$ip"
 
