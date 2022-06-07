@@ -1,0 +1,24 @@
+{
+    "name": "setup-oracle-action",
+    "version": "0.0.1",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "prepare": "ncc build index.js -o dist --license licenses.txt"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Particular/setup-oracle-action.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/Particular/setup-oracle-action/issues"
+    },
+    "homepage": "https://github.com/Particular/setup-oracle-action#readme",
+    "dependencies": {
+      "@actions/core": "^1.6.0",
+      "@actions/exec": "^1.1.0"
+    }
+  }

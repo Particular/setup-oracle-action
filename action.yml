@@ -1,0 +1,13 @@
+name: setup-oracle-action
+description: Set up Oracle for testing
+inputs:
+  connection-string-name:
+    description: The name of the environment variable to fill with the Oracle connection string
+    required: true
+  tag:
+    description: The name of the component Oracle is being used for. The Oracle namespace is tagged with this value.
+    required: true
+runs:
+  using: node12
+  main: dist/index.js
+  post: dist/index.js

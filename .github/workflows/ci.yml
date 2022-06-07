@@ -1,0 +1,38 @@
+name: CI
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ windows-2019, ubuntu-20.04 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+      - name: Azure login
+        uses: azure/login@v1.3.0
+        with:
+          creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
+      - name: Run
+        uses: ./
+        with:
+          connection-string-name: OracleConnectionString
+          tag: setup-oracle-action
+      - name: Validate connection
+        shell: pwsh
+        run: |
+          echo "OracleConnectionString = $($Env:OracleConnectionString)"
+          if ( $Env:OracleConnectionString -le 0 ) {
+            throw "Environment variable 'OracleConnectionString' not set."
+          }
