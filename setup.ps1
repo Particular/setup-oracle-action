@@ -9,6 +9,7 @@ $oraclePassword = "Welcome1"
 $ip = "127.0.0.1"
 $connectionPort = 1521
 $runnerOs = $Env:RUNNER_OS ?? "Linux"
+$resourceGroup = "GitHubActions-RG"
 $healthCheckCommand = ""
 
 Write-Output "::add-mask::$ip"
@@ -27,7 +28,7 @@ elseif ($runnerOs -eq "Windows") {
     
     Write-Output "Running Oracle container $oracleContainerName in $region (This can take a while.)"
     
-    $jsonResult = az container create --image $dockerImage --name $oracleContainerName --location $region --dns-name-label $oracleContainerName --resource-group GitHubActions-RG --cpu 4 --memory 16 --ports $connectionPort --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword
+    $jsonResult = az container create --image $dockerImage --name $oracleContainerName --location $region --dns-name-label $oracleContainerName --resource-group $resourceGroup --cpu 4 --memory 16 --ports $connectionPort --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword
     
     if (!$jsonResult) {
         Write-Output "Failed to create Oracle container"
@@ -49,7 +50,7 @@ elseif ($runnerOs -eq "Windows") {
     $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
     az tag create --resource-id $details.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
 
-    $healthCheckCommand = "az container exec --name ""$($oracleContainerName)"" --location $region --resource-group GitHubActions-RG --exec-command ""./healthcheck.sh"""
+    $healthCheckCommand = "az container exec --name ""$($oracleContainerName)"" --resource-group $resourceGroup --exec-command ""./healthcheck.sh"""
 }
 else {
     Write-Output "$runnerOs not supported"
