@@ -18,7 +18,7 @@ if ($runnerOs -eq "Linux") {
     Write-Output "Running Oracle using Docker"
     docker run --name "$($oracleContainerName)" -d -p "$($connectionPort):$($connectionPort)" -e ORACLE_PASSWORD=$oraclePassword $dockerImage
 
-    $healthCheckCommand = "docker exec ""$($oracleContainerName)"" ./healthcheck.sh"
+    $healthCheckCommand = "docker exec ""$($oracleContainerName)"" ./healthcheck.sh XEPDB1"
 }
 elseif ($runnerOs -eq "Windows") {
     $hostInfo = curl -H Metadata:true "169.254.169.254/metadata/instance?api-version=2017-08-01" | ConvertFrom-Json
@@ -50,7 +50,7 @@ elseif ($runnerOs -eq "Windows") {
     $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
     az tag create --resource-id $details.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
 
-    $healthCheckCommand = "az container exec --name ""$($oracleContainerName)"" --resource-group $resourceGroup --exec-command ""./healthcheck.sh"""
+    $healthCheckCommand = "az container exec --name ""$($oracleContainerName)"" --resource-group $resourceGroup --exec-command ""./healthcheck.sh XEPDB1"""
 }
 else {
     Write-Output "$runnerOs not supported"
