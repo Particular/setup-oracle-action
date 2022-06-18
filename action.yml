@@ -7,6 +7,9 @@ inputs:
   tag:
     description: The name of the component Oracle is being used for. The Oracle namespace is tagged with this value.
     required: true
+  init-script:
+    description: The path to an optional script to execute in SQL Plus when the database is available
+    required: false
 runs:
   using: node12
   main: dist/index.js

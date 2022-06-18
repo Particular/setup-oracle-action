@@ -11,23 +11,41 @@ on:
   workflow_dispatch:
 jobs:
   ci:
+    name: ${{ matrix.os-name }}-${{ matrix.engines }}
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ windows-2019, ubuntu-20.04 ]
+        engines: [
+          WithInitScript,
+          WithoutInitScript,
+        ]
+        include:
+          # Add os-name alias for job name
+          - os: windows-2019
+            os-name: Windows
+          - os: ubuntu-20.04
+            os-name: Linux
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
       - name: Azure login
+        if: matrix.os-name == 'Windows'
         uses: azure/login@v1.3.0
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
-      - name: Run
+      - name: Run without init script
+        if: contains(matrix.engines, 'WithoutInitScript')
         uses: ./
         with:
           connection-string-name: OracleConnectionString
+          tag: setup-oracle-action
+      - name: Run with init script
+        if: contains(matrix.engines, 'WithInitScript')
+        uses: ./
+        with:
+          connection-string-name: OracleConnectionString
+          init-script: ./add-users-tests.sql
           tag: setup-oracle-action
       - name: Validate connection
         shell: pwsh
