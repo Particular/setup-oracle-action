@@ -11,15 +11,16 @@ on:
   workflow_dispatch:
 jobs:
   ci:
-    name: ${{ matrix.os-name }}-${{ matrix.engines }}
+    name: ${{ matrix.os-name }}-${{ matrix.init-script.label }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-2019, ubuntu-20.04 ]
-        engines: [
-          WithInitScript,
-          WithoutInitScript,
-        ]
+        os: [windows-2019, ubuntu-20.04]
+        init-script:
+          - label: 'init-script'
+            path: './.github/workflows/scripts/init.sql'
+          - label: 'no-init-script'
+            path: ''
         include:
           # Add os-name alias for job name
           - os: windows-2019
@@ -34,20 +35,13 @@ jobs:
         uses: azure/login@v1.3.0
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
-      - name: Run without init script
-        if: contains(matrix.engines, 'WithoutInitScript')
+      - name: Run
         uses: ./
         with:
           connection-string-name: OracleConnectionString
           tag: setup-oracle-action
-      - name: Run with init script
-        if: contains(matrix.engines, 'WithInitScript')
-        uses: ./
-        with:
-          connection-string-name: OracleConnectionString
-          init-script: ./add-users-tests.sql
-          tag: setup-oracle-action
-      - name: Validate connection
+          init-script: ${{ matrix.init-script.path }}
+      - name: Validate
         shell: pwsh
         run: |
           echo "OracleConnectionString = $($Env:OracleConnectionString)"

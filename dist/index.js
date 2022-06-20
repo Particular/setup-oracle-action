@@ -2983,7 +2983,7 @@ let isPost = core.getState('IsPost');
 core.saveState('IsPost', true);
 
 let connectionStringName = core.getInput('connection-string-name');
-let tagName = core.getInput('tag');
+let tag = core.getInput('tag');
 let initScript = core.getInput('init-script');
 
 async function run() {
@@ -2995,35 +2995,40 @@ async function run() {
             console.log("Running setup action");
 
             let random = Math.round(10000000000 * Math.random());
-            let OracleContainerName = 'psw-oracle-' + random;
-            let StorageContainerName = 'psworacle' + random;
-            core.saveState('OracleContainerName', OracleContainerName);
-            core.saveState('StorageContainerName', StorageContainerName);
+            let containerName = 'psw-oracle-c-' + random;
+            let storageName = 'psw-oracle-s-' + random;
 
-            console.log("OracleContainerName = " + OracleContainerName);
-            console.log("StorageContainerName = " + StorageContainerName);
+            core.saveState('containerName', containerName);
+            core.saveState('storageName', storageName);
 
-            await exec.exec('pwsh', [
-                '-File', setupPs1,
-                '-OracleContainerName', OracleContainerName,
-                '-StorageContainerName', StorageContainerName,
-                '-ConnectionStringName', connectionStringName,
-                '-InitScript', initScript,
-                '-TagName', tagName
-            ]);
+            console.log("containerName = " + containerName);
+            console.log("storageName = " + storageName);
+
+            await exec.exec(
+                'pwsh',
+                [
+                    '-File', setupPs1,
+                    '-ContainerName', containerName,
+                    '-StorageName', storageName,
+                    '-ConnectionStringName', connectionStringName,
+                    '-InitScript', initScript,
+                    '-Tag', tag
+                ]);
 
         } else { // Cleanup
 
             console.log("Running cleanup");
 
-            let OracleContainerName = core.getState('OracleContainerName');
-            let StorageContainerName = core.getState('StorageContainerName');
+            let containerName = core.getState('containerName');
+            let storageName = core.getState('storageName');
 
-            await exec.exec('pwsh', [
-                '-File', cleanupPs1,
-                '-OracleContainerName', OracleContainerName,
-                '-StorageContainerName', StorageContainerName
-            ]);
+            await exec.exec(
+                'pwsh',
+                [
+                    '-File', cleanupPs1,
+                    '-ContainerName', containerName,
+                    '-StorageName', storageName
+                ]);
 
         }
 
@@ -3035,6 +3040,7 @@ async function run() {
 }
 
 run();
+
 })();
 
 module.exports = __webpack_exports__;
