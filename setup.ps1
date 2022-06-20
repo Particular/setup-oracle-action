@@ -60,7 +60,7 @@ elseif ($runnerOs -eq "Windows") {
         exit 1;
     }
     
-   $containerDetails = $containerJson | ConvertFrom-Json
+    $containerDetails = $containerJson | ConvertFrom-Json
     
     if (!$containerDetails.ipAddress) {
         Write-Output "Failed to create Oracle container $ContainerName in $region"
@@ -68,7 +68,7 @@ elseif ($runnerOs -eq "Windows") {
         exit 1;
     }
     
-    $ipAddress =$containerDetails.ipAddress.ip
+    $ipAddress = $containerDetails.ipAddress.ip
     Write-Output "::add-mask::$ipAddress"
 
     az tag create --resource-id $containerDetails.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
