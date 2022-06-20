@@ -32,6 +32,7 @@ jobs:
         uses: actions/checkout@v2.4.0
       - name: Azure login
         uses: azure/login@v1.3.0
+        if: matrix.os-name == 'Windows'
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
       - name: Run
