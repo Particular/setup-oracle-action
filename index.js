@@ -14,7 +14,8 @@ let isPost = core.getState('IsPost');
 core.saveState('IsPost', true);
 
 let connectionStringName = core.getInput('connection-string-name');
-let tagName = core.getInput('tag');
+let tag = core.getInput('tag');
+let initScript = core.getInput('init-script');
 
 async function run() {
 
@@ -24,28 +25,41 @@ async function run() {
 
             console.log("Running setup action");
 
-            let OracleContainerName = 'psw-oracle-' + Math.round(10000000000 * Math.random());
-            core.saveState('OracleContainerName', OracleContainerName);
+            let random = Math.round(10000000000 * Math.random());
+            let containerName = 'psw-oracle' + random;
+            let storageName = 'psworacle' + random;
 
-            console.log("OracleContainerName = " + OracleContainerName);
+            core.saveState('containerName', containerName);
+            core.saveState('storageName', storageName);
 
-            await exec.exec('pwsh', [
-                '-File', setupPs1,
-                '-oracleContainerName', OracleContainerName,
-                '-connectionStringName', connectionStringName,
-                '-tagName', tagName
-            ]);
+            console.log("containerName = " + containerName);
+            console.log("storageName = " + storageName);
+
+            await exec.exec(
+                'pwsh',
+                [
+                    '-File', setupPs1,
+                    '-ContainerName', containerName,
+                    '-StorageName', storageName,
+                    '-ConnectionStringName', connectionStringName,
+                    '-InitScript', initScript,
+                    '-Tag', tag
+                ]);
 
         } else { // Cleanup
 
             console.log("Running cleanup");
 
-            let OracleContainerName = core.getState('OracleContainerName');
+            let containerName = core.getState('containerName');
+            let storageName = core.getState('storageName');
 
-            await exec.exec('pwsh', [
-                '-File', cleanupPs1,
-                '-OracleContainerName', OracleContainerName
-            ]);
+            await exec.exec(
+                'pwsh',
+                [
+                    '-File', cleanupPs1,
+                    '-ContainerName', containerName,
+                    '-StorageName', storageName
+                ]);
 
         }
 

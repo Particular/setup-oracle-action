@@ -1,18 +1,20 @@
 # setup-oracle-action
 
-This action handles the setup and teardown of an Oracle Database for running tests.
+This action handles the setup and teardown of an Oracle database.
 
 ## Usage
 
-```yaml
-      - name: Setup infrastructure
-        uses: Particular/setup-oracle-action@v1.0.0
-        with:
-          connection-string-name: EnvVarToCreateWithConnectionString
-          tag: PackageName
-```
+See [action.yml](action.yml)
 
-`connection-string-name` and `tag` are required.
+```yaml
+steps:
+- name: Setup Oracle
+  uses: Particular/setup-oracle-action@v1.0.0
+  with:
+    connection-string-name: <my connection string name>
+    tag: <my tag>
+    init-script: /path/to/init-oracle.sql
+```
 
 ## License
 
