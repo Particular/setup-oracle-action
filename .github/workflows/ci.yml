@@ -18,7 +18,7 @@ jobs:
         os: [windows-2019, ubuntu-20.04]
         init-script:
           - label: 'init-script'
-            path: './init.sql'
+            path: './.github/workflows/scripts/init.sql'
           - label: 'no-init-script'
             path: ''
         include:
