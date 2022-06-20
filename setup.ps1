@@ -1,115 +1,127 @@
 param (
-    [string]$OracleContainerName = "psw-oracle-1",
-    [string]$StorageContainerName = "psworacle1",
-    [string]$ConnectionStringName = "OracleConnectionString",
-    [string]$TagName = "setup-oracle-action",
-    [string]$InitScript = $null
+    [string]$ContainerName,
+    [string]$StorageName,
+    [string]$ConnectionStringName,
+    [string]$Tag,
+    [string]$InitScript = ""
 )
 
 $dockerImage = "gvenzl/oracle-xe:21-slim"
 $oraclePassword = "Welcome1"
 $ipAddress = "127.0.0.1"
-$connectionPort = 1521
+$port = 1521
 $runnerOs = $Env:RUNNER_OS ?? "Linux"
 $resourceGroup = "GitHubActions-RG"
-$healthCheckCommand = ""
-$scriptExecutionCommand = ""
-
-Write-Output "::add-mask::$ipAddress"
+$testConnectionCommand = ""
+$runInitScriptCommand = ""
 
 if ($runnerOs -eq "Linux") {
     Write-Output "Running Oracle using Docker"
-    docker run --name "$($OracleContainerName)" -d -p "$($connectionPort):$($connectionPort)" -e ORACLE_PASSWORD=$oraclePassword $dockerImage
 
-    $healthCheckCommand = "docker exec ""$($OracleContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($connectionPort)/XEPDB1"
-    $scriptExecutionCommand = "Get-Content $($InitScript) | docker exec -i ""$($OracleContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($connectionPort)/XEPDB1"
+    docker run --name "$($ContainerName)" -d -p "$($port):$($port)" -e ORACLE_PASSWORD=$oraclePassword $dockerImage
+
+    $testConnectionCommand = "docker exec ""$($ContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/XEPDB1"
+
+    if ($InitScript) {
+        $runInitScriptCommand = "Get-Content $($InitScript) | docker exec -i ""$($ContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/XEPDB1"
+    }
 }
 elseif ($runnerOs -eq "Windows") {
+    Write-Output "Running Oracle using Azure"
+
     $hostInfo = curl -H Metadata:true "169.254.169.254/metadata/instance?api-version=2017-08-01" | ConvertFrom-Json
     $region = $hostInfo.compute.location
     $runnerOsTag = "RunnerOS=$($runnerOs)"
-    $packageTag = "Package=$TagName"
+    $packageTag = "Package=$Tag"
     $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
     $mountPath = "/mnt/scripts";
 
-    Write-Output "Creating a storage account (This can take a while.)"
-    $storageAccountDetails = az storage account create --name $StorageContainerName --location $region --resource-group $resourceGroup --sku Standard_LRS | ConvertFrom-Json
+    Write-Output "Creating a storage account (this can take a while)"
+    $storageAccountDetails = az storage account create --name $StorageName --location $region --resource-group $resourceGroup --sku Standard_LRS | ConvertFrom-Json
+    $storageAccountId = $storageAccountDetails.id
 
     Write-Output "Getting the storage account key"
-    $storageAccountKeyDetails = az storage account keys list --account-name $StorageContainerName --resource-group $resourceGroup | ConvertFrom-Json
+    $storageAccountKeyDetails = az storage account keys list --account-name $StorageName --resource-group $resourceGroup | ConvertFrom-Json
     $storageAccountKey = $storageAccountKeyDetails[0].value
     Write-Output "::add-mask::$storageAccountKey"
 
     Write-Output "Tagging the storage account"
-    az tag create --resource-id $storageAccountDetails.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
+    az tag create --resource-id $storageAccountId --tags $packageTag $runnerOsTag $dateTag | Out-Null
 
     Write-Output "Creating the file share"
-    az storage share create --account-name $StorageContainerName --name $StorageContainerName --account-key $storageAccountKey | Out-Null
-
-    if ($InitScript) {
-        $initScriptDestinationFileName = [System.IO.Path]::GetFileName($InitScript)
-        $initScriptRunScriptDestinationFileName = "runInitScript.sh";
-        "sqlplus system/$($oraclePassword)@localhost:$($connectionPort)/XEPDB1 @$($mountPath)/$($initScriptDestinationFileName)" | Out-File -FilePath $initScriptRunScriptDestinationFileName -NoNewline
-
-        Write-Output "Uploading the init script"
-        az storage file upload --account-name $StorageContainerName --path $initScriptDestinationFileName --share-name $StorageContainerName --source $InitScript --account-key $storageAccountKey
-        Write-Output "Uploading the init script run script"
-        az storage file upload --account-name $StorageContainerName --path $initScriptRunScriptDestinationFileName --share-name $StorageContainerName --source $initScriptRunScriptDestinationFileName --account-key $storageAccountKey
-    }
+    az storage share create --account-name $StorageName --name $StorageName --account-key $storageAccountKey | Out-Null
     
-    Write-Output "Running Oracle container $OracleContainerName in $region (This can take a while.)"
+    Write-Output "Running Oracle container $ContainerName in $region (this can take a while)"
     
-    $oracleContainerDetails = az container create --image $dockerImage --name $OracleContainerName --location $region --resource-group $resourceGroup --cpu 4 --memory 8 --ports $connectionPort --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword --azure-file-volume-share-name $StorageContainerName --azure-file-volume-account-name $StorageContainerName --azure-file-volume-account-key $storageAccountKey --azure-file-volume-mount-path $mountPath
+    $containerJson = az container create --image $dockerImage --name $ContainerName --location $region --resource-group $resourceGroup --cpu 4 --memory 8 --ports $port --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword --azure-file-volume-share-name $StorageName --azure-file-volume-account-name $StorageName --azure-file-volume-account-key $storageAccountKey --azure-file-volume-mount-path $mountPath
     
-    if (!$oracleContainerDetails) {
-        Write-Output "Failed to create Oracle container $OracleContainerName in $region"
+    if (!$containerJson) {
+        Write-Output "Failed to create Oracle container $ContainerName in $region"
         exit 1;
     }
     
-    $details = $oracleContainerDetails | ConvertFrom-Json
+   $containerDetails = $containerJson | ConvertFrom-Json
     
-    if (!$details.ipAddress) {
-        Write-Output "Failed to create Oracle container $OracleContainerName in $region"
-        Write-Output $oracleContainerDetails
+    if (!$containerDetails.ipAddress) {
+        Write-Output "Failed to create Oracle container $ContainerName in $region"
+        Write-Output $containerJson
         exit 1;
     }
     
-    $ipAddress = $details.ipAddress.ip
+    $ipAddress =$containerDetails.ipAddress.ip
+    Write-Output "::add-mask::$ipAddress"
 
-    $healtCheckScriptFileName = "healthcheck.sh";
-    # Exit is required to make sure sqlplus doesn't keep on running with az container exec
-    "exit | sqlplus system/$($oraclePassword)@$($ipAddress):$($connectionPort)/XEPDB1" | Out-File -FilePath $healtCheckScriptFileName -NoNewline
+    az tag create --resource-id $containerDetails.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
+
+    $testConnectionScriptFileName = "test-connection.sh";
+
+    # create the test connection script
+    # in Azure Containers, the exit command must piped to SQL Plus to make the command exit
+    "exit | sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/XEPDB1" | Out-File -FilePath $testConnectionScriptFileName -NoNewline
     
-    Write-Output "Uploading the healthcheck script"
-    az storage file upload --account-name $StorageContainerName --path $healtCheckScriptFileName --share-name $StorageContainerName --source $healtCheckScriptFileName --account-key $storageAccountKey
+    Write-Output "Uploading the test connection script"
+    az storage file upload --account-name $StorageName --path $testConnectionScriptFileName --share-name $StorageName --source $testConnectionScriptFileName --account-key $storageAccountKey
     
     Write-Output "Tagging Oracle container image"
         
-    az tag create --resource-id $details.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
+    $testConnectionCommand = "az container exec --name ""$($ContainerName)"" --resource-group $resourceGroup --exec-command ""bash $($mountPath)/$($testConnectionScriptFileName)"""
 
-    $scriptExecutionCommand = "az container exec --name ""$($OracleContainerName)"" --resource-group $resourceGroup --exec-command ""bash $($mountPath)/$($initScriptRunScriptDestinationFileName)"""
-    $healthCheckCommand = "az container exec --name ""$($OracleContainerName)"" --resource-group $resourceGroup --exec-command ""bash $($mountPath)/$($healtCheckScriptFileName)"""
+    if ($InitScript) {
+        $initScriptFileName = [System.IO.Path]::GetFileName($InitScript)
+        $runInitScriptFilename = "run-init-script.sh";
+
+        # create the script to run the init script
+        "sqlplus system/$($oraclePassword)@localhost:$($port)/XEPDB1 @$($mountPath)/$($initScriptFileName)" | Out-File -FilePath $runInitScriptFilename -NoNewline
+
+        Write-Output "Uploading the init script"
+        az storage file upload --account-name $StorageName --path $initScriptFileName --share-name $StorageName --source $InitScript --account-key $storageAccountKey
+
+        Write-Output "Uploading the script to run the init script"
+        az storage file upload --account-name $StorageName --path $runInitScriptFilename --share-name $StorageName --source $runInitScriptFilename --account-key $storageAccountKey
+
+        $runInitScriptCommand = "az container exec --name ""$($ContainerName)"" --resource-group $resourceGroup --exec-command ""bash $($mountPath)/$($runInitScriptFilename)"""
+    }
 }
 else {
     Write-Output "$runnerOs not supported"
     exit 1
 }
 
-Write-Output "::group::Connectivity"
+Write-Output "::group::Testing connection"
 
 $tries = 0
 
 do {
     $tries++
-    Write-Output "Checking for connectivity $($tries)/50..."
-    $healthCheckOutput = Invoke-Expression $healthCheckCommand
-    if ([regex]::Matches($healthCheckOutput, 'Connected to:')) {
+    Write-Output "Testing connection $($tries)/50..."
+    $testConnectionOutput = Invoke-Expression $testConnectionCommand
+    if ([regex]::Matches($testConnectionOutput, 'Connected to:')) {
         Write-Output "Connection successful"
         break;
     }
     else {
         Write-Output "No connection, retrying..."
-        Write-Output $healthCheckOutput
+        Write-Output $testConnectionOutput
         Start-Sleep -s 5
     }
 } until ($tries -ge 50)
@@ -121,17 +133,18 @@ if ($tries -ge 50) {
 
 Write-Output "::endgroup::"
 
-"$($ConnectionStringName)=User Id=system;Password=$($oraclePassword);Data Source=$($ipAddress):$($connectionPort)/XEPDB1;" >> $Env:GITHUB_ENV
+# write the connection string to the specified environment variable
+"$($ConnectionStringName)=User Id=system;Password=$($oraclePassword);Data Source=$($ipAddress):$($port)/XEPDB1;" >> $Env:GITHUB_ENV
 
 if ($InitScript) {
     
-    Write-Output "::group::Init Script"
+    Write-Output "::group::Running init script $InitScript"
 
-    $scriptExecutionCommand = $scriptExecutionCommand + '; $scriptExecutionSuccess=$?'
-    Write-Output "Executing script $InitScript against the database"
-    Invoke-Expression $scriptExecutionCommand
+    $runInitScriptCommand = $runInitScriptCommand + '; $scriptExecutionSuccess=$?'
+    
+    Invoke-Expression $runInitScriptCommand
     if (-not $scriptExecutionSuccess) {
-        Write-Output "Script execution of $InitScript did not successfully complete"
+        Write-Output "Init script $InitScript failed"
         exit 1
     }
 
