@@ -36,7 +36,7 @@ elseif ($runnerOs -eq "Windows") {
     $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
     $mountPath = "/mnt/scripts";
 
-    Write-Output "Creating a storage account (this can take a while)"
+    Write-Output "Creating storage account $StorageName in $region (this can take a while)"
     $storageAccountDetails = az storage account create --name $StorageName --location $region --resource-group $resourceGroup --sku Standard_LRS | ConvertFrom-Json
     $storageAccountId = $storageAccountDetails.id
 
@@ -51,26 +51,26 @@ elseif ($runnerOs -eq "Windows") {
     Write-Output "Creating the file share"
     az storage share create --account-name $StorageName --name $StorageName --account-key $storageAccountKey | Out-Null
     
-    Write-Output "Running Oracle container $ContainerName in $region (this can take a while)"
-    
+    Write-Output "Creating container $ContainerName in $region (this can take a while)"
     $containerJson = az container create --image $dockerImage --name $ContainerName --location $region --resource-group $resourceGroup --cpu 4 --memory 8 --ports $port --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword --azure-file-volume-share-name $StorageName --azure-file-volume-account-name $StorageName --azure-file-volume-account-key $storageAccountKey --azure-file-volume-mount-path $mountPath
     
     if (!$containerJson) {
-        Write-Output "Failed to create Oracle container $ContainerName in $region"
+        Write-Output "Failed to create container $ContainerName in $region"
         exit 1;
     }
     
     $containerDetails = $containerJson | ConvertFrom-Json
     
     if (!$containerDetails.ipAddress) {
-        Write-Output "Failed to create Oracle container $ContainerName in $region"
+        Write-Output "Failed to create container $ContainerName in $region"
         Write-Output $containerJson
         exit 1;
     }
-    
+
     $ipAddress = $containerDetails.ipAddress.ip
     Write-Output "::add-mask::$ipAddress"
 
+    Write-Output "Tagging the container"
     az tag create --resource-id $containerDetails.id --tags $packageTag $runnerOsTag $dateTag | Out-Null
 
     $testConnectionScriptFileName = "test-connection.sh";
@@ -82,8 +82,6 @@ elseif ($runnerOs -eq "Windows") {
     Write-Output "Uploading the test connection script"
     az storage file upload --account-name $StorageName --path $testConnectionScriptFileName --share-name $StorageName --source $testConnectionScriptFileName --account-key $storageAccountKey
     
-    Write-Output "Tagging Oracle container image"
-        
     $testConnectionCommand = "az container exec --name ""$($ContainerName)"" --resource-group $resourceGroup --exec-command ""bash $($mountPath)/$($testConnectionScriptFileName)"""
 
     if ($InitScript) {
@@ -137,7 +135,6 @@ Write-Output "::endgroup::"
 "$($ConnectionStringName)=User Id=system;Password=$($oraclePassword);Data Source=$($ipAddress):$($port)/XEPDB1;" >> $Env:GITHUB_ENV
 
 if ($InitScript) {
-    
     Write-Output "::group::Running init script $InitScript"
 
     $runInitScriptCommand = $runInitScriptCommand + '; $scriptExecutionSuccess=$?'
