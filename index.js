@@ -26,8 +26,8 @@ async function run() {
             console.log("Running setup action");
 
             let random = Math.round(10000000000 * Math.random());
-            let containerName = 'psw-oracle-c-' + random;
-            let storageName = 'psw-oracle-s-' + random;
+            let containerName = 'psw-oracle' + random;
+            let storageName = 'psworacle' + random;
 
             core.saveState('containerName', containerName);
             core.saveState('storageName', storageName);
