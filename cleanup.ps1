@@ -2,8 +2,15 @@ param (
     [string]$ContainerName,
     [string]$StorageName
 )
+$runnerOs = $Env:RUNNER_OS ?? "Linux"
+if ($runnerOs -eq "Linux") {
+    Write-Output "Force stopping Docker container $ContainerName"
+    docker kill $ContainerName
 
-if ($Env:RUNNER_OS -eq "Windows") {
+    Write-Output "Removing Docker container $ContainerName"
+    docker rm $ContainerName
+}
+elseif ($runnerOs -eq "Windows") {
     Write-Output "Deleting Azure container $ContainerName"
     az container delete --resource-group GitHubActions-RG --name $ContainerName --yes | Out-Null
 
@@ -11,9 +18,6 @@ if ($Env:RUNNER_OS -eq "Windows") {
     az storage account delete --resource-group GitHubActions-RG --name $StorageName --yes | Out-Null
 }
 else {
-    Write-Output "Force stopping Docker container $ContainerName"
-    docker kill $ContainerName
-
-    Write-Output "Removing Docker container $ContainerName"
-    docker rm $ContainerName
+    Write-Output "$runnerOs not supported"
+    exit 1
 }
