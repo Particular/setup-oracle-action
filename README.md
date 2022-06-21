@@ -37,6 +37,24 @@ Run the npm installation
 npm install
 ```
 
+After changing the `index.js` file run either
+
+```bash
+npm run prepare
+```
+
+or use 
+
+```bash
+npm run dev
+```
+
+which will watch the file for changes and automatically compile the file.
+
+## Testing
+
+### With node
+
 To test the setup action an `.env.setup` file in the root directory with the following content
 
 ```
@@ -69,4 +87,22 @@ STATE_storageName=nameOfPreviouslyCreatedContainer
 
 ```bash
 node -r dotenv/config dist/index.js dotenv_config_path=.env.cleanup
+```
+
+### With powershell
+
+To test the setup action set the required environment variables and execute `setup.ps1` with the desired parameters.
+
+```bash
+$Env:RUNNER_OS=Windows
+$Env:RESOURCE_GROUP_OVERRIDE=yourResourceGroup
+$Env:REGION_OVERRIDE=yourResourceGroup
+.\setup.ps1 -ContainerName psw-oracle-1 -StorageName psworacle1 -ConnectionStringName OracleConnectionString -Tag setup-oracle-action -$InitScript .github/workflows/scripts/init.sql
+```
+
+To test the cleanup action set the required environment variables and execute `cleanup.ps1` with the desired parameters.
+
+```bash
+$Env:RUNNER_OS=Windows
+.\cleanup.ps1 -ContainerName psw-oracle-1 -StorageName psworacle1 -ConnectionStringName OracleConnectionString -Tag setup-oracle-action -$InitScript .github/workflows/scripts/init.sql
 ```
