@@ -11,12 +11,12 @@ $oraclePassword = "Welcome1"
 $ipAddress = "127.0.0.1"
 $port = 1521
 $runnerOs = $Env:RUNNER_OS ?? "Linux"
-$resourceGroup = "GitHubActions-RG"
+$resourceGroup = $Env:RESOURCE_GROUP_OVERRIDE ?? "GitHubActions-RG"
 $testConnectionCommand = ""
 $runInitScriptCommand = ""
 
 if ($runnerOs -eq "Linux") {
-    Write-Output "Running Oracle using Docker"
+    Write-Output "Running Oracle in container $($ContainerName) using Docker"
 
     docker run --name "$($ContainerName)" -d -p "$($port):$($port)" -e ORACLE_PASSWORD=$oraclePassword $dockerImage
 
@@ -27,10 +27,16 @@ if ($runnerOs -eq "Linux") {
     }
 }
 elseif ($runnerOs -eq "Windows") {
-    Write-Output "Running Oracle using Azure"
+    Write-Output "Running Oracle in container $($ContainerName) using Azure"
 
-    $hostInfo = curl -H Metadata:true "169.254.169.254/metadata/instance?api-version=2017-08-01" | ConvertFrom-Json
-    $region = $hostInfo.compute.location
+    if ($Env:REGION_OVERRIDE) {
+        $region = $Env:REGION_OVERRIDE
+    }
+    else {
+        $hostInfo = curl -H Metadata:true "169.254.169.254/metadata/instance?api-version=2017-08-01" | ConvertFrom-Json
+        $region = $hostInfo.compute.location
+    }
+
     $runnerOsTag = "RunnerOS=$($runnerOs)"
     $packageTag = "Package=$Tag"
     $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
