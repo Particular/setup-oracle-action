@@ -4,7 +4,7 @@ param (
 )
 $runnerOs = $Env:RUNNER_OS ?? "Linux"
 if ($runnerOs -eq "Linux") {
-    Write-Output "Force stopping Docker container $ContainerName"
+    Write-Output "Killing Docker container $ContainerName"
     docker kill $ContainerName
 
     Write-Output "Removing Docker container $ContainerName"

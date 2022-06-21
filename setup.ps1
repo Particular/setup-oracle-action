@@ -16,7 +16,7 @@ $testConnectionCommand = ""
 $runInitScriptCommand = ""
 
 if ($runnerOs -eq "Linux") {
-    Write-Output "Running Oracle $($ContainerName) using Docker"
+    Write-Output "Running Oracle in container $($ContainerName) using Docker"
 
     docker run --name "$($ContainerName)" -d -p "$($port):$($port)" -e ORACLE_PASSWORD=$oraclePassword $dockerImage
 
@@ -27,9 +27,9 @@ if ($runnerOs -eq "Linux") {
     }
 }
 elseif ($runnerOs -eq "Windows") {
-    Write-Output "Running Oracle $($ContainerName) using Azure"
+    Write-Output "Running Oracle in container $($ContainerName) using Azure"
 
-    if($Env:REGION_OVERRIDE) {
+    if ($Env:REGION_OVERRIDE) {
         $region = $Env:REGION_OVERRIDE
     }
     else {

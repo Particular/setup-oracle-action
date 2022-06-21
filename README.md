@@ -37,19 +37,7 @@ Run the npm installation
 npm install
 ```
 
-After changing the `index.js` file run either
-
-```bash
-npm run prepare
-```
-
-or use 
-
-```bash
-npm run dev
-```
-
-which will watch the file for changes and automatically compile the file.
+When changing `index.js`, either run `npm run dev` beforehand, which will watch the file for changes and automatically compile it, or run `npm run prepare` afterwards.
 
 ## Testing
 
@@ -57,7 +45,7 @@ which will watch the file for changes and automatically compile the file.
 
 To test the setup action an `.env.setup` file in the root directory with the following content
 
-```
+```ini
 # Input overrides
 INPUT_CONNECTION-STRING-NAME=OracleConnectionString
 INPUT_TAG=setup-oracle-action
@@ -78,7 +66,7 @@ node -r dotenv/config dist/index.js dotenv_config_path=.env.setup
 
 To test the cleanup action add a `.env.cleanup` file in the root directory with the following content
 
-```
+```ini
 # State overrides
 STATE_IsPost=true
 STATE_containerName=nameOfPreviouslyCreatedContainer
