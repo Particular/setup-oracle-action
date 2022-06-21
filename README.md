@@ -58,7 +58,7 @@ then execute the script
 node -r dotenv/config dist/index.js dotenv_config_path=.env.setup
 ```
 
-To test the cleanup action change the `.env.cleanup` file in the root directory with to following content
+To test the cleanup action add a `.env.cleanup` file in the root directory with the following content
 
 ```
 # State overrides
