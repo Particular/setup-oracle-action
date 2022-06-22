@@ -1,36 +1,43 @@
 {
-  "name": "setup-oracle-action",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "typescript-action",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TypeScript template action",
+  "main": "lib/main.js",
   "scripts": {
-    "dev": "npm-watch",
-    "prepare": "ncc build index.js -o dist --license licenses.txt"
-  },
-  "watch": {
-    "prepare": {
-      "patterns": [
-        "index.js"
-      ],
-      "ignore": "dist/*",
-      "runOnChangeOnly": true
-    }
+    "build": "tsc",
+    "format": "prettier --write '**/*.ts'",
+    "format-check": "prettier --check '**/*.ts'",
+    "lint": "eslint src/**/*.ts",
+    "package": "ncc build --source-map --license licenses.txt",
+    "test": "jest",
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Particular/setup-oracle-action.git"
+    "url": "git+https://github.com/actions/typescript-action.git"
   },
-  "keywords": [],
+  "keywords": [
+    "actions",
+    "node",
+    "setup"
+  ],
   "author": "",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Particular/setup-oracle-action/issues"
-  },
-  "homepage": "https://github.com/Particular/setup-oracle-action#readme",
   "dependencies": {
-    "@actions/core": "^1.6.0",
-    "@actions/exec": "^1.1.0",
-    "dotenv": "^16.0.1",
-    "npm-watch": "^0.11.0"
+    "@actions/core": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.10.5",
+    "@typescript-eslint/parser": "^5.8.1",
+    "@vercel/ncc": "^0.31.1",
+    "eslint": "^7.32.0",
+    "eslint-plugin-github": "^4.3.2",
+    "eslint-plugin-jest": "^25.3.2",
+    "jest": "^27.2.5",
+    "js-yaml": "^4.1.0",
+    "prettier": "2.5.1",
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.4.4"
   }
 }

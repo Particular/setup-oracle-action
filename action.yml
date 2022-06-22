@@ -1,16 +1,11 @@
-name: setup-oracle-action
-description: Set up and teardown an Oracle database
+name: 'Your name here'
+description: 'Provide a description here'
+author: 'Your name or organization here'
 inputs:
-  connection-string-name:
-    description: The name of the environment variable to fill with the Oracle connection string.
+  milliseconds: # change this
     required: true
-  tag:
-    description: When the action runs on a Windows agent, this tag is applied to the Azure container and storage instances which are created by the action.
-    required: true
-  init-script:
-    description: The path to a script to execute in SQL Plus when the database is available. The script is executed by system user and may be used to initialize the database with additional users, permissions and more.
-    required: false
+    description: 'input description here'
+    default: 'default value if applicable'
 runs:
-  using: node12
-  main: dist/index.js
-  post: dist/index.js
+  using: 'node16'
+  main: 'dist/index.js'
