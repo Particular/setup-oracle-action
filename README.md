@@ -24,7 +24,7 @@ The scripts and documentation in this project are released under the [MIT Licens
 
 Use [Visual Studio Code](https://code.visualstudio.com/) with the [Remote Development extension pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
 
-When you open the folder in Visual Studio Code, you will be prompted to “Reopen in Container”. Do that, and then:
+Open the folder in Visual Studio Code. If you don't already have them, you will be prompted to install remote development extensions. After installing them, and re-opening the folder in a container, do the following:
 
 Log into Azure
 
