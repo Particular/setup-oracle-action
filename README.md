@@ -22,7 +22,9 @@ The scripts and documentation in this project are released under the [MIT Licens
 
 ## Development
 
-Once the dev container is started do the following:
+Use [Visual Studio Code](https://code.visualstudio.com/) with the [Remote Development extension pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
+
+When you open the folder in Visual Studio Code, you will be prompted to “Reopen in Container”. Do that, and then:
 
 Log into Azure
 
@@ -41,7 +43,7 @@ When changing `index.js`, either run `npm run dev` beforehand, which will watch 
 
 ## Testing
 
-### With node
+### With Node.js
 
 To test the setup action an `.env.setup` file in the root directory with the following content
 
@@ -52,7 +54,7 @@ INPUT_TAG=setup-oracle-action
 INPUT_INIT-SCRIPT=.github/workflows/scripts/init.sql
 
 # Runner overrides
-# Use LINUX to run on linux
+# Use LINUX to run on Linux
 RUNNER_OS=WINDOWS
 RESOURCE_GROUP_OVERRIDE=yourResourceGroup
 REGION_OVERRIDE=West Europe
@@ -77,7 +79,7 @@ STATE_storageName=nameOfPreviouslyCreatedContainer
 node -r dotenv/config dist/index.js dotenv_config_path=.env.cleanup
 ```
 
-### With powershell
+### With PowerShell
 
 To test the setup action set the required environment variables and execute `setup.ps1` with the desired parameters.
 
