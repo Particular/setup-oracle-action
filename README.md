@@ -84,7 +84,7 @@ To test the setup action set the required environment variables and execute `set
 ```bash
 $Env:RUNNER_OS=Windows
 $Env:RESOURCE_GROUP_OVERRIDE=yourResourceGroup
-$Env:REGION_OVERRIDE=yourResourceGroup
+$Env:REGION_OVERRIDE=yourRegion
 .\setup.ps1 -ContainerName psw-oracle-1 -StorageName psworacle1 -ConnectionStringName OracleConnectionString -Tag setup-oracle-action -$InitScript .github/workflows/scripts/init.sql
 ```
 
@@ -92,5 +92,6 @@ To test the cleanup action set the required environment variables and execute `c
 
 ```bash
 $Env:RUNNER_OS=Windows
+$Env:RESOURCE_GROUP_OVERRIDE=yourResourceGroup
 .\cleanup.ps1 -ContainerName psw-oracle-1 -StorageName psworacle1 -ConnectionStringName OracleConnectionString -Tag setup-oracle-action -$InitScript .github/workflows/scripts/init.sql
 ```
