@@ -11,6 +11,6 @@ inputs:
     description: The path to a script to execute in SQL Plus when the database is available. The script is executed by system user and may be used to initialize the database with additional users, permissions and more.
     required: false
 runs:
-  using: node16
+  using: node20
   main: dist/index.js
   post: dist/index.js
