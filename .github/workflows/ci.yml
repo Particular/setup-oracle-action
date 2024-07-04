@@ -41,6 +41,8 @@ jobs:
           connection-string-name: OracleConnectionString
           tag: setup-oracle-action
           init-script: ${{ matrix.init-script.path }}
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Validate
         shell: pwsh
         run: |
