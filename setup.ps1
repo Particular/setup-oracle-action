@@ -3,7 +3,10 @@ param (
     [string]$StorageName,
     [string]$ConnectionStringName,
     [string]$Tag,
-    [string]$InitScript = ""
+    [string]$InitScript = "",
+    [string]$RegistryLoginServer = "index.docker.io",
+    [string]$RegistryUser,
+    [string]$RegistryPass
 )
 
 $dockerImage = "gvenzl/oracle-xe:21-slim"
@@ -57,8 +60,16 @@ elseif ($runnerOs -eq "Windows") {
     Write-Output "Creating the file share"
     az storage share create --account-name $StorageName --name $StorageName --account-key $storageAccountKey | Out-Null
     
+    $azureContainerCreate = "az container create --image $dockerImage --name $ContainerName --location $region --resource-group $resourceGroup --cpu 4 --memory 8 --ports $port --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword --azure-file-volume-share-name $StorageName --azure-file-volume-account-name $StorageName --azure-file-volume-account-key $storageAccountKey --azure-file-volume-mount-path $mountPath"
+    if ($registryUser -and $registryPass) {
+        echo "Creating container with login to $RegistryLoginServer"
+        $azureContainerCreate =  "$azureContainerCreate --registry-login-server $RegistryLoginServer --registry-username $RegistryUser --registry-password $RegistryPass"
+    } else {
+        echo "Creating container with anonymous credentials"
+    }
+
     Write-Output "Creating container $ContainerName in $region (this can take a while)"
-    $containerJson = az container create --image $dockerImage --name $ContainerName --location $region --resource-group $resourceGroup --cpu 4 --memory 8 --ports $port --ip-address public --environment-variables ORACLE_PASSWORD=$oraclePassword --azure-file-volume-share-name $StorageName --azure-file-volume-account-name $StorageName --azure-file-volume-account-key $storageAccountKey --azure-file-volume-mount-path $mountPath
+    $containerJson = Invoke-Expression $azureContainerCreate
     
     if (!$containerJson) {
         Write-Output "Failed to create container $ContainerName in $region"
