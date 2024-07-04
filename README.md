@@ -14,7 +14,17 @@ steps:
     connection-string-name: <my connection string name>
     tag: <my tag>
     init-script: /path/to/init-oracle.sql
+    registry-login-server: index.docker.io
+    registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+    registry-password: ${{ secrets.DOCKERHUB_TOKEN }}}}    
 ```
+
+`connection-string-name` and `tag` are required. `init-script` is optional.
+
+For logging into a container registry when running on Windows:
+
+* `registry-login-server` defaults to `index.docker.io` and is not required if logging into Docker Hub.
+* `registry-username` and `registry-password` are optional and will result in pulling the container anonymously if omitted.
 
 ## License
 

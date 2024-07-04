@@ -10,6 +10,16 @@ inputs:
   init-script:
     description: The path to a script to execute in SQL Plus when the database is available. The script is executed by system user and may be used to initialize the database with additional users, permissions and more.
     required: false
+  registry-login-server:
+    description: The container registry to log in to, if required
+    required: false
+    default: index.docker.io
+  registry-username:
+    description: The username to log in to the container registry. Will not attempt login if not provided.
+    required: false
+  registry-password:
+    description: The password to log in to the container registry. Will not attempt login if not provided.
+    required: false    
 runs:
   using: node20
   main: dist/index.js
