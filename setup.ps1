@@ -9,7 +9,7 @@ param (
     [string]$RegistryPass
 )
 
-$dockerImage = "gvenzl/oracle-xe:21-slim"
+$dockerImage = "gvenzl/oracle-free:23-slim"
 $oraclePassword = "Welcome1"
 $ipAddress = "127.0.0.1"
 $port = 1521
@@ -23,10 +23,10 @@ if ($runnerOs -eq "Linux") {
 
     docker run --name "$($ContainerName)" -d -p "$($port):$($port)" -e ORACLE_PASSWORD=$oraclePassword $dockerImage
 
-    $testConnectionCommand = "docker exec ""$($ContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/XEPDB1"
+    $testConnectionCommand = "docker exec ""$($ContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/FREEPDB1"
 
     if ($InitScript) {
-        $runInitScriptCommand = "Get-Content $($InitScript) | docker exec -i ""$($ContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/XEPDB1"
+        $runInitScriptCommand = "Get-Content $($InitScript) | docker exec -i ""$($ContainerName)"" sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/FREEPDB1"
     }
 }
 elseif ($runnerOs -eq "Windows") {
@@ -94,7 +94,7 @@ elseif ($runnerOs -eq "Windows") {
 
     # create the test connection script
     # in Azure Containers, the exit command must piped to SQL Plus to make the command exit
-    "exit | sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/XEPDB1" | Out-File -FilePath $testConnectionScriptFileName -NoNewline
+    "exit | sqlplus system/$($oraclePassword)@$($ipAddress):$($port)/FREEPDB1" | Out-File -FilePath $testConnectionScriptFileName -NoNewline
     
     Write-Output "Uploading the test connection script"
     az storage file upload --account-name $StorageName --path $testConnectionScriptFileName --share-name $StorageName --source $testConnectionScriptFileName --account-key $storageAccountKey
@@ -106,7 +106,7 @@ elseif ($runnerOs -eq "Windows") {
         $runInitScriptFilename = "run-init-script.sh";
 
         # create the script to run the init script
-        "sqlplus system/$($oraclePassword)@localhost:$($port)/XEPDB1 @$($mountPath)/$($initScriptFileName)" | Out-File -FilePath $runInitScriptFilename -NoNewline
+        "sqlplus system/$($oraclePassword)@localhost:$($port)/FREEPDB1 @$($mountPath)/$($initScriptFileName)" | Out-File -FilePath $runInitScriptFilename -NoNewline
 
         Write-Output "Uploading the init script"
         az storage file upload --account-name $StorageName --path $initScriptFileName --share-name $StorageName --source $InitScript --account-key $storageAccountKey
@@ -149,7 +149,7 @@ if ($tries -ge 50) {
 Write-Output "::endgroup::"
 
 # write the connection string to the specified environment variable
-"$($ConnectionStringName)=User Id=system;Password=$($oraclePassword);Data Source=$($ipAddress):$($port)/XEPDB1;" >> $Env:GITHUB_ENV
+"$($ConnectionStringName)=User Id=system;Password=$($oraclePassword);Data Source=$($ipAddress):$($port)/FREEPDB1;" >> $Env:GITHUB_ENV
 
 if ($InitScript) {
     Write-Output "::group::Running init script $InitScript"
