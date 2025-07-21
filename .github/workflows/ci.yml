@@ -15,16 +15,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2022, ubuntu-22.04]
+        os: [windows-latest, ubuntu-latest]
         init-script:
           - label: 'init-script'
             path: './.github/workflows/scripts/init.sql'
           - label: 'no-init-script'
             path: ''
         include:
-          - os: windows-2022
+          - os: windows-latest
             name: Windows
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             name: Linux
       fail-fast: false
     steps:
