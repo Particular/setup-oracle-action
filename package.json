@@ -31,6 +31,6 @@
     "@actions/core": "^3.0.0",
     "@actions/exec": "^3.0.0",
     "dotenv": "^17.0.0",
-    "npm-watch": "^0.11.0"
+    "npm-watch": "^0.13.0"
   }
 }
