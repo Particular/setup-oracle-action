@@ -2,15 +2,16 @@
   "name": "setup-oracle-action",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "index.mjs",
   "scripts": {
     "dev": "npm-watch",
-    "prepare": "ncc build index.js -o dist --license licenses.txt"
+    "prepare": "ncc build index.mjs -o dist --license licenses.txt"
   },
   "watch": {
     "prepare": {
       "patterns": [
-        "index.js"
+        "index.mjs"
       ],
       "ignore": "dist/*",
       "runOnChangeOnly": true

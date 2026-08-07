@@ -1,8 +1,12 @@
 param (
-    [string]$ContainerName,
-    [string]$StorageName
+    [string]$ContainerName
 )
-$resourceGroup = $Env:RESOURCE_GROUP_OVERRIDE ?? "GitHubActions-RG"
+
+if (-not $Env:WSL_TOOLS_MODULE_PATH) {
+    throw "This action requires Particular/setup-wsl-action to run first."
+}
+Import-Module $Env:WSL_TOOLS_MODULE_PATH -Force
+
 $runnerOs = $Env:RUNNER_OS ?? "Linux"
 
 if ($runnerOs -eq "Linux") {
@@ -13,11 +17,8 @@ if ($runnerOs -eq "Linux") {
     docker rm $ContainerName
 }
 elseif ($runnerOs -eq "Windows") {
-    Write-Output "Deleting Azure container $ContainerName"
-    az container delete --resource-group $resourceGroup --name $ContainerName --yes | Out-Null
-
-    Write-Output "Deleting Azure storage account $StorageName"
-    az storage account delete --resource-group $resourceGroup --name $StorageName --yes | Out-Null
+    Write-Output "Removing WSL Docker container $ContainerName"
+    Invoke-Wsl -Command "docker rm --force ${ContainerName} 2>/dev/null || true"
 }
 else {
     Write-Output "$runnerOs not supported"
