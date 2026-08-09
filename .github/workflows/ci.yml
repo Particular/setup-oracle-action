@@ -31,7 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7.0.1
       - name: Setup WSL
-        uses: Particular/setup-wsl-action@v1.0.0
+        uses: Particular/setup-wsl-action@fix/docker-subnet-collision
       - name: Run
         uses: ./
         with:
